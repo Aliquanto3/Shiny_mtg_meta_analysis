@@ -1,0 +1,16 @@
+{
+    "dialog-state": {
+        "query": "The dataset",
+        "path": "D:/MTG/Meta analysis/Shiny_mtg_meta_analysis",
+        "regex": false,
+        "caseSensitive": false,
+        "filePatterns": [
+            "*.r",
+            "*.R"
+        ],
+        "excludeFilePatterns": [],
+        "resultsCount": 0,
+        "errorCount": 0,
+        "replaceErrors": ""
+    }
+}

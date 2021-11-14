@@ -1,0 +1,199 @@
+#Name of the file containing the Raw data
+ModernRawFile="Modern_data.json"
+PioneerRawFile="Pioneer_data.json"
+PauperRawFile="Pauper_data.json"
+
+
+#Handles the events of the "Preliminary" type
+#Adds points/victories based on the score, and number of rounds based on the
+#highest scores available
+generate_Prelim_Data = function(periodData) {
+  #COLLECT PRELIMINARIES ONLY FOR SPECIFIC TREATMENT
+  PrelimData=periodData[grep("Preliminary", periodData$Tournament), ]
+  #View(PrelimData) 
+  
+  #CALCULATE THE NUMBER OF ROUNDS IN EACH EVENT FOR THE PRELIMINARIES
+  if(nrow(PrelimData)>=1){
+    for (i in 1:nrow(PrelimData)){
+      if (PrelimData$Result[i]=="5-0" | PrelimData$Result[i]=="4-1" | 
+          PrelimData$Result[i]=="3-2"){
+        #before prelim structure changes
+        PrelimData$NRounds[i]=5
+      }else if (PrelimData$Result[i]=="4-0" | PrelimData$Result[i]=="3-1"){
+        #after prelim structure changes
+        PrelimData$NRounds[i]=4
+      }
+    }
+  }
+  
+  #CALCULATE THE NUMBER OF DEFEAT OF EACH DECK IN PRELIMINARIES - 
+  #NUMBER OF ROUNDS MINUS THE NUMBER OF POINTS/3 (3 PTS EARNED BY WIN) 
+  PrelimData$NDefeats=PrelimData$NRounds - PrelimData$Points/3
+  
+  #ADD TOP8 COLUMNS FOR MERGE WITH CHALLENGES
+  PrelimData$T8Points=rep(0,length(PrelimData$Points))
+  PrelimData$T8Defeats=rep(0,length(PrelimData$NDefeats))
+  PrelimData$T8Matches=rep(0,length(PrelimData$NRounds))
+  
+  return(PrelimData)
+  
+}
+
+#Handles the other types of events
+#Adds points/victories based on the score, and number of rounds based on the
+#highest scores available
+generate_Major_Data = function(periodData) {
+  
+  #COLLECT CHALLENGES ONLY FOR SPECIFIC TREATMENT
+  MajEvents = c("Challenge","Champs", "Champ Qual", "Showcase","Premier",
+                "Super Qualifier","Players Tour Qualifier","MOCS")
+  MajData=periodData[grep(paste(MajEvents,collapse="|"), periodData$Tournament), ]
+  #We remove those events because they do not include the points
+  if (nrow(MajData[-grep("Champions Showcase", MajData$Tournament),])>0){
+    MajData=MajData[-grep("Champions Showcase", MajData$Tournament),]
+  }
+  MajData$Points=as.numeric(MajData$Points)
+  
+  #CALCULATE THE NUMBER OF ROUNDS IN EACH EVENT FOR THE CHALLENGES
+  #DIVIDE THE MAXIMUM NUMBER OF POINTS IN SWISS TO GET THE RESULT
+  #IF MORE THAN 1 PLAYER HAS THE MAXIMUM OF POINTS, THEN IT IS LIKELY THAT 
+  #THERE IS NOT ANY PLAYER AT X-0, SO YOU ADD 1 TO THE RESULT
+  listEventsChall=unique(MajData$TournamentName)
+  nbRoundsVec=c()
+  if(length(listEventsChall)>=1){
+    for (i in 1:length(listEventsChall)){
+      periodChallEventData=subset(MajData, TournamentName == listEventsChall[i])
+      maxPoints=max(periodChallEventData$Points)
+      nbPlayMaxPts=length(which(periodChallEventData$Points == maxPoints))
+      if(nbPlayMaxPts==1){
+        nbRounds=maxPoints/3
+      }else{
+        nbRounds=1+maxPoints/3
+      }
+      nbRoundsEvent=rep(nbRounds,nrow(periodChallEventData))
+      nbRoundsVec=c(nbRoundsVec,nbRoundsEvent)
+    }
+  }
+  MajData$NRounds=nbRoundsVec
+  
+  #CALCULATE THE NUMBER OF DEFEAT OF EACH DECK IN CHALLENGES - 
+  #NUMBER OF ROUNDS MINUS THE NUMBER OF POINTS/3 (3 PTS EARNED BY WIN) 
+  MajData$NDefeats=MajData$NRounds - MajData$Points/3
+  
+  #ADD TOP8 POINTS: 3*3 to 1st, 3*2 to 2nd, 3*1 to 3rd and 4th, none to others
+  MajData$T8Points=rep(0,length(MajData$Points))
+  if(length(listEventsChall)>=1){
+    for (i in 1:length(MajData$Result)){
+      if (MajData$Result[i] == "1st Place" & !is.na(MajData$Result[i])){
+        MajData$T8Points[i] = 9
+      }else if (MajData$Result[i] == "2nd Place" & !is.na(MajData$Result[i])){
+        MajData$T8Points[i] = 6
+      }else if ((MajData$Result[i] == "3rd Place" | 
+                 MajData$Result[i] == "4th Place")  & !is.na(MajData$Result[i])){
+        MajData$T8Points[i] = 3
+      }
+    }
+  }
+  
+  #ADD TOP8 DEFEATS: 0 FOR THE WINNER, 1 FOR THE OTHERS
+  MajData$T8Defeats=MajData$NDefeats
+  if(length(listEventsChall)>=1){
+    for (i in 1:length(MajData$T8Defeats)){
+      if (!is.na(MajData$Result[i]) & (MajData$Result[i] == "2nd Place" | 
+                                       MajData$Result[i] == "3rd Place"| 
+                                       MajData$Result[i] == "4th Place" | MajData$Result[i] == "5th Place"| 
+                                       MajData$Result[i] == "6th Place" | MajData$Result[i] == "7th Place"| 
+                                       MajData$Result[i] == "8th Place")){
+        MajData$T8Defeats[i] = 1 + MajData$NDefeats[i]
+      }
+    }
+  }
+  
+  if(length(listEventsChall)>=1){
+    MajData$T8Matches=rep(0,length(MajData$T8Points))
+    for (i in 1:length(MajData$T8Matches)){
+      if (!is.na(MajData$Result[i]) & (MajData$Result[i] == "1st Place" | 
+                                       MajData$Result[i] == "2nd Place")){
+        MajData$T8Matches[i] = 3
+      }else if (!is.na(MajData$Result[i]) & (MajData$Result[i] == "3rd Place" | 
+                                             MajData$Result[i] == "4th Place")){
+        MajData$T8Matches[i] = 2 
+      }else if (!is.na(MajData$Result[i]) & (MajData$Result[i] == "5th Place"| 
+                                             MajData$Result[i] == "6th Place" | 
+                                             MajData$Result[i] == "7th Place"| 
+                                             MajData$Result[i] == "8th Place")){
+        MajData$T8Matches[i] = 1 
+      }
+    }
+  }
+  
+  return(MajData)
+  
+}
+
+#Event type:
+#"Official Competitions" = Major Official Events + Prelims
+#"Preliminaries" = Preliminaries
+#"Major Official Events" = Challenge,Champ,Showcase,Premier,Qualifier,MOCS
+generate_df = function(RawFile){
+  
+  #IMPORT DATA
+  rawData=fromJSON(RawFile)[[1]]
+  rawData$Date = as.Date(rawData$Date)
+  #If needed for less points on the slider range
+  #rawData=subset(rawData, Date >= as.Date("01/01/2021")
+  rawData$Points = as.numeric(rawData$Points)
+  
+  #NAMES AND DATE DON'T ALLOW THE IDENTIFICATION OF AN EVENT, BUT THE COMBINATION
+  #OF BOTH CAN, HENCE THE ADDITION OF ANOTHER COLUMN FOR THIS IDENTIFICATION
+  for (i in 1:length(rawData$Tournament)){
+    rawData$TournamentName[i]=paste(rawData$Tournament[i],
+                                    as.character(rawData$Date[i]),sep=" ")
+  }
+  
+  df=rbind(generate_Major_Data(rawData),generate_Prelim_Data(rawData))
+  
+  #Convert the decklists columns to an more manageable form
+  MainboardCardNames=list()
+  for (i in 1:nrow(df)){
+    MainboardCardNames[i]=list(df$Mainboard[i][[1]]$CardName)
+  }
+  
+  MainboardCardCounts=list()
+  for (i in 1:nrow(df)){
+    MainboardCardCounts[i]=list(df$Mainboard[i][[1]]$Count)
+  }
+  
+  SideboardCardNames=list()
+  for (i in 1:nrow(df)){
+    SideboardCardNames[i]=list(df$Sideboard[i][[1]]$CardName)
+  }
+  
+  SideboardCardCounts=list()
+  for (i in 1:nrow(df)){
+    SideboardCardCounts[i]=list(df$Sideboard[i][[1]]$Count)
+  }
+  
+  df=data.frame(df,
+                MainboardCardNames=I(MainboardCardNames),
+                MainboardCardCounts=I(MainboardCardCounts),
+                SideboardCardNames=I(SideboardCardNames),
+                SideboardCardCounts=I(SideboardCardCounts))
+  
+  return(df)
+}
+
+
+library(jsonlite)
+
+#Get the data from the source for the dates
+ModernTreatedFile=generate_df(ModernRawFile)
+write_json(ModernTreatedFile,"Modern_treated.json")
+
+saveRDS(ModernTreatedFile,"Modern_treated.rds")
+
+PioneerTreatedFile=generate_df(PioneerRawFile)
+write_json(PioneerTreatedFile,"Pioneer_treated.json")
+
+PauperTreatedFile=generate_df(PauperRawFile)
+write_json(PauperTreatedFile,"Pauper_treated.json")
