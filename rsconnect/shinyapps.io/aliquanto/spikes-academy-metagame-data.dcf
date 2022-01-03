@@ -1,0 +1,14 @@
+name: spikes-academy-metagame-data
+title: spikes-academy-metagame-data
+username:
+account: aliquanto
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 5209724
+bundleId: 5396797
+url: https://aliquanto.shinyapps.io/spikes-academy-metagame-data/
+when: 1640084272.12605
+lastSyncTime: 1640084272.12605
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .gitattributes|Raw_abandoned/df_treatment.R|Raw_abandoned/Modern_metas.json|Raw_abandoned/Pauper_metas.json|Todo.R
