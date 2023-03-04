@@ -1,6 +1,6 @@
 {
     "dialog-state": {
-        "query": "The dataset",
+        "query": "VSMetaScore",
         "path": "D:/MTG/Meta analysis/Shiny_mtg_meta_analysis",
         "regex": false,
         "caseSensitive": false,
@@ -9,7 +9,7 @@
             "*.R"
         ],
         "excludeFilePatterns": [],
-        "resultsCount": 0,
+        "resultsCount": 3,
         "errorCount": 0,
         "replaceErrors": ""
     }

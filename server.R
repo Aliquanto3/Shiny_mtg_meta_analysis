@@ -3,8 +3,7 @@
 function(input, output, session) {
   
   #Plot the presence as a pie chart or histogram of each archetype
-  output$plotPresence = renderPlot({
-
+  output$plotPresence = renderGirafe({
     #Copy the first loaded data for the chosen format
     if (input$presenceFormat=="Modern"){
       dataset=dfModern
@@ -12,12 +11,12 @@ function(input, output, session) {
       dataset=dfPioneer
     }else if (input$presenceFormat=="Pauper"){
       dataset=dfPauper
+    }else if (input$presenceFormat=="Legacy"){
+    dataset=dfLegacy
     }
-
     #Keep only the data between the selected dates
     dataset=dataset[dataset$Date >= input$presenceDates1 &
                       dataset$Date <= input$presenceDates2,]
-
     #Provide the right name to the type of chosen events
     #and filter to keep only the selected events
     EventType="Official Competitions"
@@ -32,7 +31,6 @@ function(input, output, session) {
       dataset=dataset[grep(paste(MajEvents,collapse="|"), dataset$Tournament), ]
       EventType="Major Official Events"
     }
-    
     #Plot text if there is no event in the selection
     if (is.na(EventType)){
       p = plotNoEventType
@@ -63,8 +61,8 @@ function(input, output, session) {
     #Return the graph to be plotted
     print(p)
 
-  }, height=800)
- 
+  })
+  
   #Plot the winrate of the most played decks with CI
   output$plotWinrate = renderPlot({
     
@@ -75,6 +73,8 @@ function(input, output, session) {
       dataset=dfPioneer
     }else if (input$winrateFormat=="Pauper"){
       dataset=dfPauper
+    }else if (input$winrateFormat=="Legacy"){
+      dataset=dfLegacy
     }
     
     #Keep only the data between the selected dates
@@ -115,11 +115,13 @@ function(input, output, session) {
                                      as.Date(input$winrateDates2, format="%Y-%m-%d", 
                                              origin ="1970-01-01"), 1, 1)
       
-      p=winrates_graph(dataset,arch_ranked,"Matches",input$winrateShare,
-                       as.Date(input$winrateDates1, format="%Y-%m-%d", 
+      p=winrates_graph(df=dataset,arch_ranked=arch_ranked,presence="Matches",
+                       HistShare=input$winrateShare,
+                       beginning=as.Date(input$winrateDates1, format="%Y-%m-%d", 
                                origin ="1970-01-01"),
-                       as.Date(input$winrateDates2, format="%Y-%m-%d", 
-                               origin ="1970-01-01"),EventType)
+                       end=as.Date(input$winrateDates2, format="%Y-%m-%d", 
+                               origin ="1970-01-01"),
+                       EventType=EventType)
       
       
     }
@@ -129,7 +131,6 @@ function(input, output, session) {
     
   }, height=800)
   
-   
   #Plot the representation of the win rate depending on presence for all decks
   output$plotWvpf = renderGirafe({
     
@@ -140,6 +141,8 @@ function(input, output, session) {
       dataset=dfPioneer
     }else if (input$wvpfFormat=="Pauper"){
       dataset=dfPauper
+    }else if (input$wvpfFormat=="Legacy"){
+      dataset=dfLegacy
     }
     
     #Keep only the data between the selected dates
@@ -177,7 +180,7 @@ function(input, output, session) {
       p = metric_graph(metric_df,input$wvpfPresence,input$diameters,input$diam_ratio,
                        as.Date(input$wvpfDates1, format="%Y-%m-%d", origin ="1970-01-01"),
                        as.Date(input$wvpfDates2, format="%Y-%m-%d", origin ="1970-01-01"),
-                       input$isLog,FALSE,EventType,input$wvpfFormat)
+                       input$isLog,input$wvpfShare,EventType,input$wvpfFormat)
     }
     
     #Return the graph to be plotted
@@ -196,6 +199,8 @@ function(input, output, session) {
       dataset=dfPioneer
     }else if (input$wvpmpFormat=="Pauper"){
       dataset=dfPauper
+    }else if (input$wvpmpFormat=="Legacy"){
+      dataset=dfLegacy
     }
     
     #Keep only the data between the selected dates
@@ -229,9 +234,6 @@ function(input, output, session) {
       #win rate based on presence (clustering them, only for the most present)
     } else {
       metric_df=metric_points_archetypes(dataset)
-      metric_df$WinrateAverage=metric_df$WinrateAverage*100
-      metric_df$Winrate95Min=metric_df$Winrate95Min*100
-      metric_df$Winrate95Max=metric_df$Winrate95Max*100
       
       p = kmeans_arch(metric_df,input$wvpmpNoClusters,30,50,"Hartigan-Wong",
                       as.Date(input$wvpmpDates1, format="%Y-%m-%d", origin ="1970-01-01"),
@@ -254,6 +256,8 @@ function(input, output, session) {
       dataset=dfPioneer
     }else if (input$lcFormat=="Pauper"){
       dataset=dfPauper
+    }else if (input$lcFormat=="Legacy"){
+      dataset=dfLegacy
     }
     
     #Keep only the data between the selected dates
@@ -287,24 +291,23 @@ function(input, output, session) {
     } else {
       metric_df=metric_points_archetypes(dataset)
       
+      # metric_df_sub = metric_df[
+      #   metric_df$TotalMatches > input$lcHistShare*sum(metric_df$TotalMatches), ]
+      
       metric_df_log_matches=metric_df
       
       metric_df_log_matches$TotalMatches=
         log(metric_df_log_matches$TotalMatches)
       
-      metric_df_log_matches_sub=metric_df_log_matches[
-        metric_df_log_matches$TotalMatches>mean(
-          metric_df_log_matches$TotalMatches),]
-      
-      arch_ranked_sub=archetypes_ranking(metric_df_log_matches_sub,
+      arch_ranked_sub=archetypes_ranking(metric_df_log_matches,
                                          as.Date(input$lcDates1, format="%Y-%m-%d", origin ="1970-01-01"),
                                          as.Date(input$lcDates2, format="%Y-%m-%d", origin ="1970-01-01"),
                                          input$lcPresence_Weight, input$lcPPR_Weight)
       
-      p = log_comb_graph(dataset,arch_ranked_sub,
-                         as.Date(input$lcDates1, format="%Y-%m-%d", origin ="1970-01-01"),
-                         as.Date(input$lcDates2, format="%Y-%m-%d", origin ="1970-01-01"),
-                         EventType,input$lcHistShare, input$lcPresence_Weight, 
+      p = log_comb_graph(df=dataset,arch_ranked=arch_ranked_sub,
+                         beginning=as.Date(input$lcDates1, format="%Y-%m-%d", origin ="1970-01-01"),
+                         end=as.Date(input$lcDates2, format="%Y-%m-%d", origin ="1970-01-01"),
+                         EventType=EventType,HistShare=input$lcHistShare, input$lcPresence_Weight, 
                          input$lcPPR_Weight,input$presenceFormat)
     }
     
@@ -323,6 +326,8 @@ function(input, output, session) {
       dataset=dfPioneer
     }else if (input$dtFormat=="Pauper"){
       dataset=dfPauper
+    }else if (input$dtFormat=="Legacy"){
+      dataset=dfLegacy
     }
     
     #Keep only the data between the selected dates
@@ -363,11 +368,11 @@ function(input, output, session) {
                              'Upper bound of the 95% confidence interval on the winrate',
                              'Lower bound of the 95% confidence interval on the winrate',
                              'Average number of matches per player')
-      metric_df[['Actual winrate']]=metric_df[['Actual winrate']]*100
+      metric_df[['Actual winrate']]=metric_df[['Actual winrate']]
       metric_df[['Upper bound of the 95% confidence interval on the winrate']]=
-        metric_df[['Upper bound of the 95% confidence interval on the winrate']]*100
+        metric_df[['Upper bound of the 95% confidence interval on the winrate']]
       metric_df[['Lower bound of the 95% confidence interval on the winrate']]=
-        metric_df[['Lower bound of the 95% confidence interval on the winrate']]*100
+        metric_df[['Lower bound of the 95% confidence interval on the winrate']]
     }
     
     metric_df
@@ -407,6 +412,8 @@ function(input, output, session) {
         dataset=dfPioneer
       }else if (input$dtFormat=="Pauper"){
         dataset=dfPauper
+      }else if (input$dtFormat=="Legacy"){
+        dataset=dfLegacy
       }
       
       #Provide the right name to the type of chosen events
@@ -452,6 +459,8 @@ function(input, output, session) {
       dataset=dfPioneer
     }else if (input$eiFormat=="Pauper"){
       dataset=dfPauper
+    }else if (input$eiFormat=="Legacy"){
+      dataset=dfLegacy
     }
     
     #Keep only the data between the selected dates
@@ -483,6 +492,7 @@ function(input, output, session) {
       
       #Get the table of results for each archetype
     } else {
+      
       nbDecks=length(dataset$AnchorUri)
       nbDiffPlayers=length(unique(dataset$Player))
       nbExactArch=length(unique(dataset$Archetype$Archetype))
@@ -505,7 +515,8 @@ function(input, output, session) {
                       "\nAverage number of rounds in the data (w/o top8): ",avgNbRounds,
                       "\nMinimum number of rounds in the data (w/o top8): ",minNbRounds,
                       "\nMaximum number of rounds in the data (w/o top8): ",maxNbRounds,
-                      "\nNumber of events in the data: ", nbEvents,sep="")
+                      "\nNumber of events in the data: ", nbEvents,
+                      sep="")
     }
     
     eventInfo
@@ -523,6 +534,8 @@ function(input, output, session) {
       dataset=dfPioneer
     }else if (input$euFormat=="Pauper"){
       dataset=dfPauper
+    }else if (input$euFormat=="Legacy"){
+      dataset=dfLegacy
     }
     
     #Keep only the data between the selected dates
@@ -582,6 +595,8 @@ function(input, output, session) {
       dataset=dfPioneer
     }else if (input$dlFormat=="Pauper"){
       dataset=dfPauper
+    }else if (input$dlFormat=="Legacy"){
+      dataset=dfLegacy
     }
     
     #Keep only the data between the selected dates
@@ -603,6 +618,8 @@ function(input, output, session) {
       dataset=dfPioneer
     }else if (input$dlFormat=="Pauper"){
       dataset=dfPauper
+    }else if (input$dlFormat=="Legacy"){
+      dataset=dfLegacy
     }
     
     #Keep only the data between the selected dates
@@ -721,6 +738,8 @@ function(input, output, session) {
         dataset=dfPioneer
       }else if (input$dlFormat=="Pauper"){
         dataset=dfPauper
+      }else if (input$dlFormat=="Legacy"){
+        dataset=dfLegacy
       }
       
       #Keep only the data between the selected dates
@@ -800,6 +819,8 @@ function(input, output, session) {
       dataset=dfPioneer
     }else if (input$wrcMDFormat=="Pauper"){
       dataset=dfPauper
+    }else if (input$wrcMDFormat=="Legacy"){
+      dataset=dfLegacy
     }
     
     #Keep only the data between the selected dates
@@ -825,6 +846,8 @@ function(input, output, session) {
       dataset=dfPioneer
     }else if (input$wrcMDFormat=="Pauper"){
       dataset=dfPauper
+    }else if (input$wrcMDFormat=="Legacy"){
+      dataset=dfLegacy
     }
     
     #Keep only the data between the selected dates
@@ -855,6 +878,8 @@ function(input, output, session) {
       dataset=dfPioneer
     }else if (input$wrcMDFormat=="Pauper"){
       dataset=dfPauper
+    }else if (input$wrcMDFormat=="Legacy"){
+      dataset=dfLegacy
     }
     
     #Keep only the data between the selected dates
@@ -907,9 +932,9 @@ function(input, output, session) {
         WinrateWoTheCard=sum(ArchetypeWoTheCard$Points+ArchetypeWoTheCard$T8Points)/
           3/sum(ArchetypeWoTheCard$NRounds+ArchetypeWoTheCard$T8Matches)
       } 
-      WoTheCard=paste("The winrate of ", ArchetypeName," decks <strong>without</strong> ", 
-                      CardToLookFor," is <strong>",format(round(WinrateWoTheCard*100, 2), 
-                                                          nsmall = 2)," %</strong> for ",
+      WoTheCard=paste("The winrate of ", ArchetypeName,
+                      " decks <strong>without</strong> ", CardToLookFor," is <strong>",
+                      format(round(WinrateWoTheCard*100, 2),nsmall = 2)," %</strong> for ",
                       nrow(ArchetypeWoTheCard)," decklists between ", input$wrcMDDates1,
                       " and ", input$wrcMDDates2,".<br><br>",sep = "")
       
@@ -990,6 +1015,8 @@ function(input, output, session) {
       dataset=dfPioneer
     }else if (input$wrcMDFormat=="Pauper"){
       dataset=dfPauper
+    }else if (input$wrcMDFormat=="Legacy"){
+      dataset=dfLegacy
     }
     
     #Keep only the data between the selected dates
@@ -1117,6 +1144,8 @@ function(input, output, session) {
       dataset=dfPioneer
     }else if (input$wrcSBFormat=="Pauper"){
       dataset=dfPauper
+    }else if (input$wrcSBFormat=="Legacy"){
+      dataset=dfLegacy
     }
     
     #Keep only the data between the selected dates
@@ -1142,6 +1171,8 @@ function(input, output, session) {
       dataset=dfPioneer
     }else if (input$wrcSBFormat=="Pauper"){
       dataset=dfPauper
+    }else if (input$wrcSBFormat=="Legacy"){
+      dataset=dfLegacy
     }
     
     #Keep only the data between the selected dates
@@ -1172,6 +1203,8 @@ function(input, output, session) {
       dataset=dfPioneer
     }else if (input$wrcSBFormat=="Pauper"){
       dataset=dfPauper
+    }else if (input$wrcSBFormat=="Legacy"){
+      dataset=dfLegacy
     }
     
     #Keep only the data between the selected dates
@@ -1307,6 +1340,8 @@ function(input, output, session) {
       dataset=dfPioneer
     }else if (input$wrcSBFormat=="Pauper"){
       dataset=dfPauper
+    }else if (input$wrcSBFormat=="Legacy"){
+      dataset=dfLegacy
     }
     
     #Keep only the data between the selected dates

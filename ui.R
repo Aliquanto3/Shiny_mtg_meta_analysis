@@ -1,23 +1,30 @@
-source("libraries.R")
-source("data_paths.R")
-source("error_messages.R")
-source("functions.R")
-source("data_load.R")
+scriptDir="Scripts"
 
-minDate=as.Date(min(dfModern$Date,dfPioneer$Date,dfPauper$Date))
-maxDate=as.Date(max(dfModern$Date,dfPioneer$Date,dfPauper$Date))
+filesToSource=c("1-libraries.R",
+                "2-data_paths.R",
+                "3-error_messages.R",
+                "4-functions.R",
+                "5-data_load.R")
+
+for (i in 1:length(filesToSource)){
+  source(paste(scriptDir,filesToSource[i],sep="/"))
+}
+
+minDate=as.Date(min(dfModern$Date,dfPioneer$Date,dfPauper$Date,dfLegacy$Date))
+maxDate=as.Date(max(dfModern$Date,dfPioneer$Date,dfPauper$Date,dfLegacy$Date))
 
 navbarPage("MTGO results analysis",
            theme = shinytheme("cerulean"),
+           
            tabPanel("Presence",
                     sidebarPanel(
                       
                       selectInput(inputId = "presenceFormat", 
                                   label = h4("Format"),
-                                  choices = c("Modern","Pioneer","Pauper")),
+                                  choices = c("Modern","Pioneer","Legacy","Pauper")),
                       bsPopover(id = "presenceFormat", 
                                 title = "Select the format of tournaments you want to cover.", 
-                                content = "Currently only Modern and Pioneer are supported for archetype recognition",
+                                content = "Currently only Modern, Pauper, Legacy and Pioneer are supported for archetype recognition",
                                 placement = "top", 
                                 trigger = "hover"),
                       
@@ -62,7 +69,7 @@ navbarPage("MTGO results analysis",
                                 content = "Indicate whether you want to include or not Challenge and bigger event data.", 
                                 placement = "top", 
                                 trigger = "hover"),
-
+                      
                       numericInput(inputId='presenceShare', 
                                    label = h4("Percent for \"Other\""),
                                    value = 2,
@@ -71,10 +78,10 @@ navbarPage("MTGO results analysis",
                                    step = 0.1),
                       bsPopover(id = "presenceShare", 
                                 title = "Percentage to be added to \"Other\"",
-                                content = "Select the percentage under which a deck is put in the \"Other\" category.",
+                                content = "Select the percentage of presence under which a deck is put in the \"Other\" category.",
                                 placement = "top", 
                                 trigger = "hover"),
-
+                      
                       selectInput(inputId = "presenceType", 
                                   label = h4("Type of Presence"),
                                   choices = c("Matches", "Copies", "Players")),
@@ -86,27 +93,27 @@ navbarPage("MTGO results analysis",
                       
                       selectInput(inputId = "presenceGraph", 
                                   label = h4("Type of Graph"),
-                                  choices = c("Pie Chart","Histogram")),
+                                  choices = c("Histogram","Pie Chart")),
                       bsPopover(id = "presenceGraph", 
                                 title = "Pie Chart or Histogram?",
                                 content = "Select the type of graph you want to display: a pie chart or a histogram.", 
                                 placement = "top", 
                                 trigger = "hover"),
                     ),
-
+                    
                     mainPanel(
-                      plotOutput("plotPresence")
+                      girafeOutput("plotPresence", width = "90%", height = "90%")
                     )
            ),
-           tabPanel("Win Rate",
+           tabPanel("Winrate",
                     sidebarPanel(
                       
                       selectInput(inputId = "winrateFormat", 
                                   label = h4("Format"),
-                                  choices = c("Modern","Pioneer","Pauper")),
+                                  choices = c("Modern","Pioneer","Legacy","Pauper")),
                       bsPopover(id = "winrateFormat", 
                                 title = "Select the format of tournaments you want to cover.", 
-                                content = "Currently only Modern and Pioneer are supported for archetype recognition",
+                                content = "Currently only Modern, Pauper, Legacy and Pioneer are supported for archetype recognition",
                                 placement = "top", 
                                 trigger = "hover"),
                       
@@ -153,14 +160,14 @@ navbarPage("MTGO results analysis",
                                 trigger = "hover"),
                       
                       numericInput(inputId='winrateShare', 
-                                   label = h4("Percent for \"Other\""),
+                                   label = h4("Presence percentage to be displayed"),
                                    value = 2,
                                    min = 0.1,
                                    max = 10,
                                    step = 0.1),
                       bsPopover(id = "winrateShare", 
-                                title = "Percentage to be added to \"Other\"",
-                                content = "Select the percentage under which a deck is put in the \"Other\" category.",
+                                title = "Percentage to be displayed",
+                                content = "Select the percentage of presence (based on matches) under which a deck is not displayed.",
                                 placement = "top", 
                                 trigger = "hover"),
                     ),
@@ -174,10 +181,10 @@ navbarPage("MTGO results analysis",
                       
                       selectInput(inputId = "wvpfFormat", 
                                   label = h4("Format"),
-                                  choices = c("Modern","Pioneer","Pauper")),
+                                  choices = c("Modern","Pioneer","Legacy","Pauper")),
                       bsPopover(id = "wvpfFormat", 
                                 title = "Select the format of tournaments you want to cover.", 
-                                content = "Currently only Modern and Pioneer are supported for archetype recognition",
+                                content = "Currently only Modern, Legacy, Pauper and Pioneer are supported for archetype recognition",
                                 placement = "top", 
                                 trigger = "hover"),
                       
@@ -220,6 +227,18 @@ navbarPage("MTGO results analysis",
                       bsPopover(id = "wvpfChallenges", 
                                 title = "Major Event data",
                                 content = "Indicate whether you want to include or not Challenge and bigger event data.", 
+                                placement = "top", 
+                                trigger = "hover"),
+                      
+                      numericInput(inputId='wvpfShare', 
+                                   label = h4("Presence percentage to be displayed"),
+                                   value = 0.1,
+                                   min = 0.1,
+                                   max = 10,
+                                   step = 0.1),
+                      bsPopover(id = "wvpfShare", 
+                                title = "Minimum percentage of presence to appear",
+                                content = "Select the percentage of presence under which a deck is not displayed. (minimum:0.1%)",
                                 placement = "top", 
                                 trigger = "hover"),
                       
@@ -271,10 +290,10 @@ navbarPage("MTGO results analysis",
                     sidebarPanel(
                       selectInput(inputId = "wvpmpFormat", 
                                   label = h4("Format"),
-                                  choices = c("Modern","Pioneer","Pauper")),
+                                  choices = c("Modern","Pioneer", "Legacy", "Pauper")),
                       bsPopover(id = "wvpmpFormat", 
                                 title = "Select the format of tournaments you want to cover.", 
-                                content = "Currently only Modern and Pioneer are supported for archetype recognition",
+                                content = "Currently only Modern, Pauper, Legacy and Pioneer are supported for archetype recognition",
                                 placement = "top", 
                                 trigger = "hover"),
                       
@@ -341,10 +360,10 @@ navbarPage("MTGO results analysis",
                     sidebarPanel(
                       selectInput(inputId = "lcFormat", 
                                   label = h4("Format"),
-                                  choices = c("Modern","Pioneer","Pauper")),
+                                  choices = c("Modern","Pioneer","Legacy","Pauper")),
                       bsPopover(id = "lcFormat", 
                                 title = "Select the format of tournaments you want to cover.", 
-                                content = "Currently only Modern and Pioneer are supported for archetype recognition",
+                                content = "Currently only Modern, Pauper, Legacy and Pioneer are supported for archetype recognition",
                                 placement = "top", 
                                 trigger = "hover"),
                       
@@ -398,31 +417,31 @@ navbarPage("MTGO results analysis",
                                    step = 0.1),
                       bsPopover(id = "lcPresence_Weight", 
                                 title = "How impactful should the presence be in the calculation?",
-                                content = "Enter the number that multiplies the value of the presence in the sum of presence and win rate to weigh it.", 
+                                content = "Enter the number that multiplies the value of the presence in the sum of presence and winrate to weigh it.", 
                                 placement = "top", 
                                 trigger = "hover"),
                       
                       numericInput(inputId = "lcPPR_Weight", 
-                                   label = h4("Weight of Win Rate"),
+                                   label = h4("Weight of Winrate"),
                                    value = 1,
                                    min = 0.1,
                                    max = 10,
                                    step = 0.1),
                       bsPopover(id = "lcPPR_Weight", 
-                                title = "How impactful should the win rate be in the calculation?",
-                                content = "Enter the number that multiplies the value of the win rate in the sum of presence and win rate to weigh it.", 
+                                title = "How impactful should the winrate be in the calculation?",
+                                content = "Enter the number that multiplies the value of the winrate in the sum of presence and winrate to weigh it.", 
                                 placement = "top", 
                                 trigger = "hover"),
                       
-                      numericInput(inputId = "lcHistShare", 
-                                   label = h4("Minimum presence to appear"),
+                      numericInput(inputId='lcHistShare', 
+                                   label = h4("Presence percentage to be displayed"),
                                    value = 2,
                                    min = 0.1,
                                    max = 10,
-                                   step = 0.1),
+                                   step = 0.01),
                       bsPopover(id = "lcHistShare", 
                                 title = "Presence percentage to make it on the graph",
-                                content = "Enter the minimum presence percentage required for an archetype to appear on the graph.", 
+                                content = "Select the percentage of presence (based on matches) under which a deck is not displayed.", 
                                 placement = "top", 
                                 trigger = "hover"),
                     ),
@@ -436,7 +455,7 @@ navbarPage("MTGO results analysis",
                     sidebarPanel(
                       selectInput(inputId = "dtFormat", 
                                   label = h4("Format"),
-                                  choices = c("Modern","Pioneer","Pauper")),
+                                  choices = c("Modern","Pioneer","Legacy","Pauper")),
                       bsPopover(id = "dtFormat", 
                                 title = "Select the format of tournaments you want to cover.", 
                                 content = "Currently only Modern and Pionneer are supported for archetype recognition",
@@ -499,7 +518,7 @@ navbarPage("MTGO results analysis",
            #          sidebarPanel(
            #            selectInput(inputId = "mdFormat", 
            #                        label = h4("Format"),
-           #                        choices = c("Modern","Pioneer","Pauper")),
+           #                        choices = c("Modern","Pioneer","Legacy","Pauper")),
            #            bsPopover(id = "mdFormat", 
            #                      title = "Select the format of tournaments you want to cover.", 
            #                      content = "Currently only Modern and Pionneer are supported for archetype recognition",
@@ -561,7 +580,7 @@ navbarPage("MTGO results analysis",
            #          sidebarPanel(
            #            selectInput(inputId = "sbFormat", 
            #                        label = h4("Format"),
-           #                        choices = c("Modern","Pioneer","Pauper")),
+           #                        choices = c("Modern","Pioneer","Legacy","Pauper")),
            #            bsPopover(id = "sbFormat", 
            #                      title = "Select the format of tournaments you want to cover.", 
            #                      content = "Currently only Modern and Pionneer are supported for archetype recognition",
@@ -624,10 +643,10 @@ navbarPage("MTGO results analysis",
                     sidebarPanel(
                       selectInput(inputId = "dlFormat", 
                                   label = h4("Format"),
-                                  choices = c("Modern","Pioneer","Pauper")),
+                                  choices = c("Modern","Pioneer","Legacy","Pauper")),
                       bsPopover(id = "dlFormat", 
                                 title = "Select the format of tournaments you want to cover.", 
-                                content = "Currently only Modern and Pioneer are supported for archetype recognition",
+                                content = "Currently only Modern, Pauper, Legacy and Pioneer are supported for archetype recognition",
                                 placement = "top", 
                                 trigger = "hover"),
                       
@@ -703,14 +722,14 @@ navbarPage("MTGO results analysis",
                     )
            ),
            
-           tabPanel("MD Card Win Rate",
+           tabPanel("MD Card Winrate",
                     sidebarPanel(
                       selectInput(inputId = "wrcMDFormat", 
                                   label = h4("Format"),
-                                  choices = c("Modern","Pioneer","Pauper")),
+                                  choices = c("Modern","Pioneer","Legacy","Pauper")),
                       bsPopover(id = "wrcMDFormat", 
                                 title = "Select the format of tournaments you want to cover.", 
-                                content = "Currently only Modern and Pioneer are supported for archetype recognition",
+                                content = "Currently only Modern, Pauper, Legacy and Pioneer are supported for archetype recognition",
                                 placement = "top", 
                                 trigger = "hover"),
                       
@@ -768,14 +787,14 @@ navbarPage("MTGO results analysis",
            ),
            
            
-           tabPanel("SB Card Win Rate",
+           tabPanel("SB Card Winrate",
                     sidebarPanel(
                       selectInput(inputId = "wrcSBFormat", 
                                   label = h4("Format"),
-                                  choices = c("Modern","Pioneer","Pauper")),
+                                  choices = c("Modern","Pioneer","Legacy","Pauper")),
                       bsPopover(id = "wrcSBFormat", 
                                 title = "Select the format of tournaments you want to cover.", 
-                                content = "Currently only Modern and Pioneer are supported for archetype recognition",
+                                content = "Currently only Modern, Pauper, Legacy and Pioneer are supported for archetype recognition",
                                 placement = "top", 
                                 trigger = "hover"),
                       
@@ -836,10 +855,10 @@ navbarPage("MTGO results analysis",
                     sidebarPanel(
                       selectInput(inputId = "euFormat", 
                                   label = h4("Format"),
-                                  choices = c("Modern","Pioneer","Pauper")),
+                                  choices = c("Modern","Pioneer","Legacy","Pauper")),
                       bsPopover(id = "euFormat", 
                                 title = "Select the format of tournaments you want to cover.", 
-                                content = "Currently only Modern and Pioneer are supported for archetype recognition",
+                                content = "Currently only Modern, Pauper, Legacy and Pioneer are supported for archetype recognition",
                                 placement = "top", 
                                 trigger = "hover"),
                       
@@ -895,10 +914,10 @@ navbarPage("MTGO results analysis",
                     sidebarPanel(
                       selectInput(inputId = "eiFormat", 
                                   label = h4("Format"),
-                                  choices = c("Modern","Pioneer","Pauper")),
+                                  choices = c("Modern","Pioneer","Legacy","Pauper")),
                       bsPopover(id = "eiFormat", 
                                 title = "Select the format of tournaments you want to cover.", 
-                                content = "Currently only Modern and Pioneer are supported for archetype recognition",
+                                content = "Currently only Modern, Pauper, Legacy and Pioneer are supported for archetype recognition",
                                 placement = "top", 
                                 trigger = "hover"),
                       
@@ -983,7 +1002,30 @@ navbarPage("MTGO results analysis",
                           target="_blank",
                           "Pioneer Fr"),
                           "Discord servers
-                        for their help with the data generation and the Pioneer archetype detection."
+                        for their help with the data generation and the Pioneer archetype recognition.
+                        Legacy archetype recognition was made possible by Lardach and Nadram from the",
+                        a(href="https://discord.gg/AcMtnNWvhq",
+                          target="_blank",
+                          "Legacy Fr"),
+                        "Discord server.",
+                        "As for Pauper archetype recognition, I need to thank",
+                        a(href="https://twitter.com/MindsDesire85",
+                          target="_blank",
+                          "All Might"),
+                        "and",
+                        a(href="https://twitter.com/Babe_Bbage",
+                          target="_blank",
+                          "Dodecanoic"),
+                        "from the",
+                        a(href="https://discord.gg/gBdAsshdpy",
+                          target="_blank",
+                          "Pauper Fr"),
+                        "and",
+                        a(href="https://discord.gg/vdkv6Pk",
+                          target="_blank",
+                          "MTG Fr"),
+                        "Discord servers."
+                        
                         )
                     )
            )
