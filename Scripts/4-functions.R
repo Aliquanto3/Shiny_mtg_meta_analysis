@@ -184,7 +184,7 @@ metagame_box_plot = function(df,histShare,presence,beginning,end,EventType,mtgFo
     scale_color_gradient(low="blue", high="red") +
     #scale_x_discrete(guide = guide_axis(n.dodge=2)) + 
     theme(axis.text.x  = element_text(size=6),
-          axis.text.y  = element_text(size=6),
+          axis.text.y  = element_text(size=6,hjust=0.95),
           plot.title = element_text(hjust = 0.5, color = "#111111",size = 9),
           plot.subtitle = element_text(hjust = 0.5,size = 6),
           legend.text = element_text(size = 6)) +
