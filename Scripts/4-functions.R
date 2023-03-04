@@ -177,10 +177,10 @@ metagame_box_plot = function(df,histShare,presence,beginning,end,EventType,mtgFo
   
   #plot is much clearer
   metagame_chart=ggplot(df_gen, aes(x=Archetype, y=as.numeric(Share), fill=Archetype, tooltip = Tooltip_Text)) +
-    geom_text(aes(label = paste0(Share, "%")), hjust = -0.2, size = 1.5) +
     geom_col_interactive() + theme_minimal() + guides(fill = FALSE) +
+    geom_text(aes(label = paste0(Share, "%")), hjust = 1.2, size = 2) +
     labs(x = NULL, y = "Presence (%)", fill = NULL, 
-         title = boxplot_title, subtitle = "by Anael Yahi", size = 8) + 
+         title = boxplot_title, subtitle = "by Anael Yahi", size = 4) + 
     scale_color_gradient(low="blue", high="red") +
     #scale_x_discrete(guide = guide_axis(n.dodge=2)) + 
     theme(axis.text.x  = element_text(size=6),
