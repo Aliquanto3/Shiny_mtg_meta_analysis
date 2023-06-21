@@ -156,7 +156,7 @@ generate_df = function(RawFile){
   
   df=rbind(generate_Major_Data(rawData),generate_Prelim_Data(rawData))
   
-  #Convert the decklists columns to an more manageable form
+  #Convert the decklists columns to a more manageable form
   MainboardCardNames=list()
   for (i in 1:nrow(df)){
     MainboardCardNames[i]=list(df$Mainboard[i][[1]]$CardName)

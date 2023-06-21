@@ -256,7 +256,6 @@ by Anael Yahi")+
     scale_x_discrete(guide = guide_axis(n.dodge=2))
 }
 
-
 #LIST ALL THE DIFFERENT PLAYERS IN THE DATA
 generate_player_list = function(df){
   #CREATE A DATAFRAME CONTAINING THE LIST OF ARCHETYPES
