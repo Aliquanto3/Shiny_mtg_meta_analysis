@@ -186,6 +186,21 @@ generate_df = function(RawFile){
   return(df)
 }
 
+#GET THE USEFUL DATA FROM ALL THE CARDS IN THE GAME
+getRawCardData = function(CardFile,CardIDFile){
+  #DATA FROM: https://mtgjson.com/downloads/all-files/
+  #IMPORT ALL THE DATA FOR ALL THE CARDS IN THE GAME
+  cardData = read.csv(CardFile,sep=",",header=T)
+  cardIdentifier = read.csv(CardIDFile,sep=",",header=T)
+  cardDataMerge = merge(cardData,cardIdentifier, by  = "uuid") 
+  #KEEP ONLY RELEVANT INFORMATION AND REMOVE DUPLICATES - CARDS PRINTED 
+  #MULTIPLE TIMES
+  cardDataSub = unique(subset(cardDataMerge,select=c(
+    colors,manaValue,faceName,layout,manaCost,name,subtypes,supertypes,
+    type,types,isReprint,setCode,artist,scryfallId)))
+  return(cardDataSub)
+}
+
 
 #Get the data from the source for the dates
 #and write it in a RDS file for better performance.
@@ -200,3 +215,6 @@ saveRDS(PauperTreatedFile,paste(RDSDir,"Pauper_treated.rds",sep="/"))
 
 LegacyTreatedFile=generate_df(LegacyRawFile)
 saveRDS(LegacyTreatedFile,paste(RDSDir,"Legacy_treated.rds",sep="/"))
+
+rawCardData=getRawCardData(CardFile,CardIDFile)
+saveRDS(rawCardData,paste(RDSDir,"Card_treated.rds",sep="/"))

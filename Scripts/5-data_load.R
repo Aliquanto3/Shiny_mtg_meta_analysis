@@ -8,4 +8,4 @@ dfPauper=readRDS(paste(RDSDir,"Pauper_treated.rds",sep="/"))
 dfLegacy=readRDS(paste(RDSDir,"Legacy_treated.rds",sep="/"))
 
 #Get the card data
-cardDataSub=getCardData(CardFile)
+cardDataSub=readRDS(paste(RDSDir,"Card_treated.rds",sep="/"))

@@ -9,3 +9,4 @@ LegacyRawFile=paste(DataDir,"Legacy_data.json",sep="/")
 
 #Name of the file containing all the card data
 CardFile=paste(DataDir,"cards.csv",sep="/")
+CardIDFile=paste(DataDir,"cardIdentifiers.csv",sep="/")

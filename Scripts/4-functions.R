@@ -627,7 +627,7 @@ by Anael Yahi",sep = " ")
     geom_text_repel(aes(label=Archetype),hjust=0, vjust=0,point.padding = NA,
                     size = 2, nudge_x = 0.1, direction = "y", show.legend = FALSE,
                     segment.size=0.2,segment.alpha=0.4) + 
-    geom_point_interactive(aes(size=3*NoPlayers, tooltip = Tooltip_Text, 
+    geom_point_interactive(aes(size=3*NoPlayers, 
                                data_id = Archetype),show.legend = FALSE)
   
   girafe(ggobj = gg_point)
@@ -779,11 +779,13 @@ archAverageData = function(dataset,cardDataSub){
 getCardData = function(CardFile){
   #DATA FROM: https://mtgjson.com/downloads/all-files/
   #IMPORT ALL THE DATA FOR ALL THE CARDS IN THE GAME
-  cardData=read.csv(CardFile,sep=",",header=T)
+  cardData = read.csv(CardFile,sep=",",header=T)
+  cardIdentifier = read.csv(CardIDFile,sep=",",header=T)
+  cardDataMerge = merge(cardData,cardIdentifier, by  = "uuid") 
   #KEEP ONLY RELEVANT INFORMATION AND REMOVE DUPLICATES - CARDS PRINTED 
   #MULTIPLE TIMES
-  cardDataSub=unique(subset(cardData,select=c(
-    colors,convertedManaCost,faceName,layout,manaCost,name,subtypes,supertypes,
+  cardDataSub = unique(subset(cardDataMerge,select=c(
+    colors,manaValue,faceName,layout,manaCost,name,subtypes,supertypes,
     type,types,isReprint,setCode,artist,scryfallId)))
   return(cardDataSub)
 }
