@@ -301,7 +301,7 @@ metric_points_players = function(df){
     metric_df_players$TotalMatches[i]=sum(df3$NRounds,
                                           df3$T8Matches)
     #NUMBER OF WINS OF THAT ARCHETYPE
-    total_wins_arch=sum((df3$Points + df3$T8Points)/3)
+    total_wins_arch=round(sum((df3$Points + df3$T8Points)/3))
     #NUMBER OF MATCHES OF THAT ARCHETYPE
     total_matches_arch=sum(df3$NRounds + df3$T8Matches)
     metric_df_players$TotalPoints[i]=total_wins_arch*3
@@ -357,8 +357,8 @@ metric_points_archetypes = function(df){
       metric_df$NoPlayers[i],2)
     
     #NUMBER OF WINS OF THAT ARCHETYPE
-    total_wins_arch=sum((df$Points[arch_identification] + 
-                           df$T8Points[arch_identification])/3)
+    total_wins_arch=round(sum((df$Points[arch_identification] + 
+                           df$T8Points[arch_identification])/3))
     #NUMBER OF MATCHES OF THAT ARCHETYPE
     total_matches_arch=sum(df$NRounds[arch_identification] + 
                              df$T8Matches[arch_identification])
@@ -378,9 +378,9 @@ metric_points_archetypes = function(df){
                  conf.level=0.95)$conf.int[2], 4)*100
     
     # #WINRATE OF THAT ARCHETYPE DIVIDED BY THE AVERAGE WINRATE OF ITS PILOTS
-    # metric_df$WinrateArchetypeOutPlayers[i]=format(round(
-    #   metric_df$WinrateAverage[i]/mean(players_df[grep(metric_df$Archetype[i],
-    #                        players_df$ArchetypeNames),]$WinrateAverage), 2),nsmall = 2)
+    metric_df$WinrateArchetypeOutPlayers[i]=format(round(
+        metric_df$WinrateAverage[i]/mean(players_df[grep(metric_df$Archetype[i],
+                          players_df$ArchetypeNames),]$WinrateAverage), 2),nsmall = 2)
     
     metric_df$Tooltip_Text[i]=paste(metric_df$Archetype[i],": ",
                                     round(metric_df$NoCopies[i]/sum(metric_df$NoCopies)*100, digits = 2),
@@ -619,16 +619,17 @@ kmeans_arch = function (metric_df,k,iter,init,algo,beginning,end,
   Circle diameters depending on number of Players
   Minimum presence to appear (average):",round(mean(df_elim$TotalMatches)/100,digits=3),"%
 by Anael Yahi",sep = " ")
-  gg_point = ggplot(data = df_kde,  mapping = aes(x = Presence, y = WinrateAverage, 
-                                                  colour = CLUSTER)) + 
-    coord_cartesian() + theme_bw(base_size = 6) + 
+  gg_point = ggplot(data = df_kde,  mapping = aes(x = Presence, y = WinrateAverage,
+                                                  colour = CLUSTER)) +
+    coord_cartesian() + theme_bw(base_size = 6) +
     scale_x_continuous(trans = 'log10') + scale_fill_locuszoom() +
     labs(x=x_label, y=y_label, title=graph_title, subtitle=graph_subtitle) +
     geom_text_repel(aes(label=Archetype),hjust=0, vjust=0,point.padding = NA,
                     size = 2, nudge_x = 0.1, direction = "y", show.legend = FALSE,
-                    segment.size=0.2,segment.alpha=0.4) + 
+                    segment.size=0.2,segment.alpha=0.4) +
     geom_point_interactive(aes(size=3*NoPlayers, 
-                               data_id = Archetype),show.legend = FALSE)
+                               #tooltip = Tooltip_Text,
+    data_id = Archetype),show.legend = FALSE)
   
   girafe(ggobj = gg_point)
 }
@@ -779,13 +780,11 @@ archAverageData = function(dataset,cardDataSub){
 getCardData = function(CardFile){
   #DATA FROM: https://mtgjson.com/downloads/all-files/
   #IMPORT ALL THE DATA FOR ALL THE CARDS IN THE GAME
-  cardData = read.csv(CardFile,sep=",",header=T)
-  cardIdentifier = read.csv(CardIDFile,sep=",",header=T)
-  cardDataMerge = merge(cardData,cardIdentifier, by  = "uuid") 
+  cardData=read.csv(CardFile,sep=",",header=T)
   #KEEP ONLY RELEVANT INFORMATION AND REMOVE DUPLICATES - CARDS PRINTED 
   #MULTIPLE TIMES
-  cardDataSub = unique(subset(cardDataMerge,select=c(
-    colors,manaValue,faceName,layout,manaCost,name,subtypes,supertypes,
+  cardDataSub=unique(subset(cardData,select=c(
+    colors,convertedManaCost,faceName,layout,manaCost,name,subtypes,supertypes,
     type,types,isReprint,setCode,artist,scryfallId)))
   return(cardDataSub)
 }
