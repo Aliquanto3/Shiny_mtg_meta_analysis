@@ -20,16 +20,20 @@ function(input, output, session) {
     #Provide the right name to the type of chosen events
     #and filter to keep only the selected events
     EventType="Official Competitions"
-    if (!input$presencePrelims & !input$presenceChallenges){
+    if (!input$presencePrelims & !input$presenceChallenges & !input$presencePaper){
       dataset=NA
       EventType=NA
-    }else if (input$presencePrelims & !input$presenceChallenges){
+    }else if (input$presencePrelims & !input$presenceChallenges & !input$presencePaper){
       dataset=dataset[grep("Preliminary", dataset$Tournament), ]
       EventType="Preliminaries"
-    }else if (!input$presencePrelims & input$presenceChallenges){
+    }else if (!input$presencePrelims & input$presenceChallenges & !input$presencePaper){
       MajEvents = c("Challenge","Champ","Showcase","Premier","Qualifier","MOCS")
       dataset=dataset[grep(paste(MajEvents,collapse="|"), dataset$Tournament), ]
       EventType="Major Official Events"
+    }else if (!input$presencePrelims & !input$presenceChallenges & input$presencePaper){
+      PapEvents = c("20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
+      dataset=dataset[grep(paste(PapEvents,collapse="|"), dataset$Tournament), ]
+      EventType="Major Official Paper Events"
     }
     #Plot text if there is no event in the selection
     if (is.na(EventType)){
@@ -84,16 +88,20 @@ function(input, output, session) {
     #Provide the right name to the type of chosen events
     #and filter to keep only the selected events
     EventType="Official Competitions"
-    if (!input$winratePrelims & !input$winrateChallenges){
+    if (!input$winratePrelims & !input$winrateChallenges & !input$winratePaper){
       dataset=NA
       EventType=NA
-    }else if (input$winratePrelims & !input$winrateChallenges){
+    }else if (input$winratePrelims & !input$winrateChallenges & !input$winratePaper){
       dataset=dataset[grep("Preliminary", dataset$Tournament), ]
       EventType="Preliminaries"
-    }else if (!input$winratePrelims & input$winrateChallenges){
+    }else if (!input$winratePrelims & input$winrateChallenges & !input$winratePaper){
       MajEvents = c("Challenge","Champ","Showcase","Premier","Qualifier","MOCS")
       dataset=dataset[grep(paste(MajEvents,collapse="|"), dataset$Tournament), ]
       EventType="Major Official Events"
+    }else if (!input$winratePrelims & !input$winrateChallenges & input$winratePaper){
+      PapEvents = c("20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
+      dataset=dataset[grep(paste(PapEvents,collapse="|"), dataset$Tournament), ]
+      EventType="Major Official Paper Events"
     }
     
     #Plot text if there is no event in the selection
@@ -152,16 +160,20 @@ function(input, output, session) {
     #Provide the right name to the type of chosen events
     #and filter to keep only the selected events
     EventType="Official Competitions"
-    if (!input$wvpfPrelims & !input$wvpfChallenges){
+    if (!input$wvpfPrelims & !input$wvpfChallenges & !input$wvpfPaper){
       dataset=NA
       EventType=NA
-    }else if (input$wvpfPrelims & !input$wvpfChallenges){
+    }else if (input$wvpfPrelims & !input$wvpfChallenges & !input$wvpfPaper){
       dataset=dataset[grep("Preliminary", dataset$Tournament), ]
       EventType="Preliminaries"
-    }else if (!input$wvpfPrelims & input$wvpfChallenges){
+    }else if (!input$wvpfPrelims & input$wvpfChallenges & !input$wvpfPaper){
       MajEvents = c("Challenge","Champ","Showcase","Premier","Qualifier","MOCS")
       dataset=dataset[grep(paste(MajEvents,collapse="|"), dataset$Tournament), ]
       EventType="Major Official Events"
+    }else if (!input$wvpfPrelims & !input$wvpfChallenges & input$wvpfPaper){
+      PapEvents = c("20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
+      dataset=dataset[grep(paste(PapEvents,collapse="|"), dataset$Tournament), ]
+      EventType="Major Official Paper Events"
     }
         
     #Plot text if there is no event in the selection
@@ -210,16 +222,20 @@ function(input, output, session) {
     #Provide the right name to the type of chosen events
     #and filter to keep only the selected events
     EventType="Official Competitions"
-    if (!input$wvpmpPrelims & !input$wvpmpChallenges){
+    if (!input$wvpmpPrelims & !input$wvpmpChallenges & !input$wvpmpPaper){
       dataset=NA
       EventType=NA
-    }else if (input$wvpmpPrelims & !input$wvpmpChallenges){
+    }else if (input$wvpmpPrelims & !input$wvpmpChallenges & !input$wvpmpPaper){
       dataset=dataset[grep("Preliminary", dataset$Tournament), ]
       EventType="Preliminaries"
-    }else if (!input$wvpmpPrelims & input$wvpmpChallenges){
+    }else if (!input$wvpmpPrelims & input$wvpmpChallenges & !input$wvpmpPaper){
       MajEvents = c("Challenge","Champ","Showcase","Premier","Qualifier","MOCS")
       dataset=dataset[grep(paste(MajEvents,collapse="|"), dataset$Tournament), ]
       EventType="Major Official Events"
+    }else if (!input$wvpmpPrelims & !input$wvpmpChallenges & input$wvpmpPaper){
+      PapEvents = c("20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
+      dataset=dataset[grep(paste(PapEvents,collapse="|"), dataset$Tournament), ]
+      EventType="Major Official Paper Events"
     }
     
     #Plot text if there is no event in the selection
@@ -239,6 +255,7 @@ function(input, output, session) {
                       as.Date(input$wvpmpDates1, format="%Y-%m-%d", origin ="1970-01-01"),
                       as.Date(input$wvpmpDates2, format="%Y-%m-%d", origin ="1970-01-01")
                       ,TRUE,TRUE,EventType,input$wvpmpFormat)
+
     }
     
     #Return the graph to be plotted
@@ -267,16 +284,20 @@ function(input, output, session) {
     #Provide the right name to the type of chosen events
     #and filter to keep only the selected events
     EventType="Official Competitions"
-    if (!input$lcPrelims & !input$lcChallenges){
+    if (!input$lcPrelims & !input$lcChallenges & !input$lcPaper){
       dataset=NA
       EventType=NA
-    }else if (input$lcPrelims & !input$lcChallenges){
+    }else if (input$lcPrelims & !input$lcChallenges & !input$lcPaper){
       dataset=dataset[grep("Preliminary", dataset$Tournament), ]
       EventType="Preliminaries"
-    }else if (!input$lcPrelims & input$lcChallenges){
+    }else if (!input$lcPrelims & input$lcChallenges & !input$lcPaper){
       MajEvents = c("Challenge","Champ","Showcase","Premier","Qualifier","MOCS")
       dataset=dataset[grep(paste(MajEvents,collapse="|"), dataset$Tournament), ]
       EventType="Major Official Events"
+    }else if (!input$lcPrelims & !input$lcChallenges & input$lcPaper){
+      PapEvents = c("20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
+      dataset=dataset[grep(paste(PapEvents,collapse="|"), dataset$Tournament), ]
+      EventType="Major Official Paper Events"
     }
     
     #Plot text if there is no event in the selection
@@ -337,16 +358,20 @@ function(input, output, session) {
     #Provide the right name to the type of chosen events
     #and filter to keep only the selected events
     EventType="Official Competitions"
-    if (!input$dtPrelims & !input$dtChallenges){
+    if (!input$dtPrelims & !input$dtChallenges & !input$dtPaper){
       dataset=NA
       EventType=NA
-    }else if (input$dtPrelims & !input$dtChallenges){
+    }else if (input$dtPrelims & !input$dtChallenges & !input$dtPaper){
       dataset=dataset[grep("Preliminary", dataset$Tournament), ]
       EventType="Preliminaries"
-    }else if (!input$dtPrelims & input$dtChallenges){
+    }else if (!input$dtPrelims & input$dtChallenges & !input$dtPaper){
       MajEvents = c("Challenge","Champ","Showcase","Premier","Qualifier","MOCS")
       dataset=dataset[grep(paste(MajEvents,collapse="|"), dataset$Tournament), ]
       EventType="Major Official Events"
+    }else if (!input$dtPrelims & !input$dtChallenges & input$dtPaper){
+      PapEvents = c("20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
+      dataset=dataset[grep(paste(PapEvents,collapse="|"), dataset$Tournament), ]
+      EventType="Major Official Paper Events"
     }
     
     #Return a table with a message if there is no event in the selection
@@ -385,17 +410,21 @@ function(input, output, session) {
     filename = function() {
       #Provide the right name to the type of chosen events
       #and filter to keep only the selected events
-      EventType="Official_Competitions"
-      if (!input$dtPrelims & !input$dtChallenges){
+      EventType="Official Competitions"
+      if (!input$dtPrelims & !input$dtChallenges & !input$dtPaper){
         dataset=NA
         EventType=NA
-      }else if (input$dtPrelims & !input$dtChallenges){
+      }else if (input$dtPrelims & !input$dtChallenges & !input$dtPaper){
         dataset=dataset[grep("Preliminary", dataset$Tournament), ]
         EventType="Preliminaries"
-      }else if (!input$dtPrelims & input$dtChallenges){
+      }else if (!input$dtPrelims & input$dtChallenges & !input$dtPaper){
         MajEvents = c("Challenge","Champ","Showcase","Premier","Qualifier","MOCS")
         dataset=dataset[grep(paste(MajEvents,collapse="|"), dataset$Tournament), ]
-        EventType="Major_Official_Events"
+        EventType="Major Official Events"
+      }else if (!input$dtPrelims & !input$dtChallenges & input$dtPaper){
+        PapEvents = c("20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
+        dataset=dataset[grep(paste(PapEvents,collapse="|"), dataset$Tournament), ]
+        EventType="Major Official Paper Events"
       }
       
       nameWoExt=paste("MTGO",input$dtFormat,EventType,"archetype_data_from", 
@@ -419,16 +448,20 @@ function(input, output, session) {
       #Provide the right name to the type of chosen events
       #and filter to keep only the selected events
       EventType="Official Competitions"
-      if (!input$dtPrelims & !input$dtChallenges){
+      if (!input$dtPrelims & !input$dtChallenges & !input$dtPaper){
         dataset=NA
         EventType=NA
-      }else if (input$dtPrelims & !input$dtChallenges){
+      }else if (input$dtPrelims & !input$dtChallenges & !input$dtPaper){
         dataset=dataset[grep("Preliminary", dataset$Tournament), ]
         EventType="Preliminaries"
-      }else if (!input$dtPrelims & input$dtChallenges){
+      }else if (!input$dtPrelims & input$dtChallenges & !input$dtPaper){
         MajEvents = c("Challenge","Champ","Showcase","Premier","Qualifier","MOCS")
         dataset=dataset[grep(paste(MajEvents,collapse="|"), dataset$Tournament), ]
         EventType="Major Official Events"
+      }else if (!input$dtPrelims & !input$dtChallenges & input$dtPaper){
+        PapEvents = c("20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
+        dataset=dataset[grep(paste(PapEvents,collapse="|"), dataset$Tournament), ]
+        EventType="Major Official Paper Events"
       }
       
       #Return a table with a message if there is no event in the selection
@@ -470,16 +503,20 @@ function(input, output, session) {
     #Provide the right name to the type of chosen events
     #and filter to keep only the selected events
     EventType="Official Competitions"
-    if (!input$eiPrelims & !input$eiChallenges){
+    if (!input$eiPrelims & !input$eiChallenges & !input$eiPaper){
       dataset=NA
       EventType=NA
-    }else if (input$eiPrelims & !input$eiChallenges){
+    }else if (input$eiPrelims & !input$eiChallenges & !input$eiPaper){
       dataset=dataset[grep("Preliminary", dataset$Tournament), ]
       EventType="Preliminaries"
-    }else if (!input$eiPrelims & input$eiChallenges){
+    }else if (!input$eiPrelims & input$eiChallenges & !input$eiPaper){
       MajEvents = c("Challenge","Champ","Showcase","Premier","Qualifier","MOCS")
       dataset=dataset[grep(paste(MajEvents,collapse="|"), dataset$Tournament), ]
       EventType="Major Official Events"
+    }else if (!input$eiPrelims & !input$eiChallenges & input$eiPaper){
+      PapEvents = c("20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
+      dataset=dataset[grep(paste(PapEvents,collapse="|"), dataset$Tournament), ]
+      EventType="Major Official Paper Events"
     }
     
     #Return a message if there is no event in the selection
@@ -545,16 +582,20 @@ function(input, output, session) {
     #Provide the right name to the type of chosen events
     #and filter to keep only the selected events
     EventType="Official Competitions"
-    if (!input$euPrelims & !input$euChallenges){
+    if (!input$euPrelims & !input$euChallenges & !input$euPaper){
       dataset=NA
       EventType=NA
-    }else if (input$euPrelims & !input$euChallenges){
+    }else if (input$euPrelims & !input$euChallenges & !input$euPaper){
       dataset=dataset[grep("Preliminary", dataset$Tournament), ]
       EventType="Preliminaries"
-    }else if (!input$euPrelims & input$euChallenges){
+    }else if (!input$euPrelims & input$euChallenges & !input$euPaper){
       MajEvents = c("Challenge","Champ","Showcase","Premier","Qualifier","MOCS")
       dataset=dataset[grep(paste(MajEvents,collapse="|"), dataset$Tournament), ]
       EventType="Major Official Events"
+    }else if (!input$euPrelims & !input$euChallenges & input$euPaper){
+      PapEvents = c("20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
+      dataset=dataset[grep(paste(PapEvents,collapse="|"), dataset$Tournament), ]
+      EventType="Major Official Paper Events"
     }
     
     #Return a table with a message if there is no event in the selection
@@ -629,16 +670,20 @@ function(input, output, session) {
     #Provide the right name to the type of chosen events
     #and filter to keep only the selected events
     EventType="Official Competitions"
-    if (!input$dlPrelims & !input$dlChallenges){
+    if (!input$dlPrelims & !input$dlChallenges & !input$dlPaper){
       dataset=NA
       EventType=NA
-    }else if (input$dlPrelims & !input$dlChallenges){
+    }else if (input$dlPrelims & !input$dlChallenges & !input$dlPaper){
       dataset=dataset[grep("Preliminary", dataset$Tournament), ]
       EventType="Preliminaries"
-    }else if (!input$dlPrelims & input$dlChallenges){
+    }else if (!input$dlPrelims & input$dlChallenges & !input$dlPaper){
       MajEvents = c("Challenge","Champ","Showcase","Premier","Qualifier","MOCS")
       dataset=dataset[grep(paste(MajEvents,collapse="|"), dataset$Tournament), ]
       EventType="Major Official Events"
+    }else if (!input$dlPrelims & !input$dlChallenges & input$dlPaper){
+      PapEvents = c("20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
+      dataset=dataset[grep(paste(PapEvents,collapse="|"), dataset$Tournament), ]
+      EventType="Major Official Paper Events"
     }
     
     #Return a table with a message if there is no event in the selection
@@ -711,17 +756,21 @@ function(input, output, session) {
     filename = function() {
       #Provide the right name to the type of chosen events
       #and filter to keep only the selected events
-      EventType="Official_Competitions"
-      if (!input$dlPrelims & !input$dlChallenges){
+      EventType="Official Competitions"
+      if (!input$dlPrelims & !input$dlChallenges & !input$dlPaper){
         dataset=NA
         EventType=NA
-      }else if (input$dlPrelims & !input$dlChallenges){
+      }else if (input$dlPrelims & !input$dlChallenges & !input$dlPaper){
         dataset=dataset[grep("Preliminary", dataset$Tournament), ]
         EventType="Preliminaries"
-      }else if (!input$dlPrelims & input$dlChallenges){
+      }else if (!input$dlPrelims & input$dlChallenges & !input$dlPaper){
         MajEvents = c("Challenge","Champ","Showcase","Premier","Qualifier","MOCS")
         dataset=dataset[grep(paste(MajEvents,collapse="|"), dataset$Tournament), ]
-        EventType="Major_Official_Events"
+        EventType="Major Official Events"
+      }else if (!input$dlPrelims & !input$dlChallenges & input$dlPaper){
+        PapEvents = c("20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
+        dataset=dataset[grep(paste(PapEvents,collapse="|"), dataset$Tournament), ]
+        EventType="Major Official Paper Events"
       }
       
       nameWoExt=paste("MTGO",input$dlFormat,EventType,"decklist_data_from", 
@@ -759,16 +808,20 @@ function(input, output, session) {
       #Provide the right name to the type of chosen events
       #and filter to keep only the selected events
       EventType="Official Competitions"
-      if (!input$dlPrelims & !input$dlChallenges){
+      if (!input$dlPrelims & !input$dlChallenges & !input$dlPaper){
         dataset=NA
         EventType=NA
-      }else if (input$dlPrelims & !input$dlChallenges){
+      }else if (input$dlPrelims & !input$dlChallenges & !input$dlPaper){
         dataset=dataset[grep("Preliminary", dataset$Tournament), ]
         EventType="Preliminaries"
-      }else if (!input$dlPrelims & input$dlChallenges){
+      }else if (!input$dlPrelims & input$dlChallenges & !input$dlPaper){
         MajEvents = c("Challenge","Champ","Showcase","Premier","Qualifier","MOCS")
         dataset=dataset[grep(paste(MajEvents,collapse="|"), dataset$Tournament), ]
         EventType="Major Official Events"
+      }else if (!input$dlPrelims & !input$dlChallenges & input$dlPaper){
+        PapEvents = c("20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
+        dataset=dataset[grep(paste(PapEvents,collapse="|"), dataset$Tournament), ]
+        EventType="Major Official Paper Events"
       }
       
       #Return a table with a message if there is no event in the selection
@@ -889,16 +942,20 @@ function(input, output, session) {
     #Provide the right name to the type of chosen events
     #and filter to keep only the selected events
     EventType="Official Competitions"
-    if (!input$wrcMDPrelims & !input$wrcMDChallenges){
+    if (!input$wrcMDPrelims & !input$wrcMDChallenges & !input$wrcMDPaper){
       dataset=NA
       EventType=NA
-    }else if (input$wrcMDPrelims & !input$wrcMDChallenges){
+    }else if (input$wrcMDPrelims & !input$wrcMDChallenges & !input$wrcMDPaper){
       dataset=dataset[grep("Preliminary", dataset$Tournament), ]
       EventType="Preliminaries"
-    }else if (!input$wrcMDPrelims & input$wrcMDChallenges){
+    }else if (!input$wrcMDPrelims & input$wrcMDChallenges & !input$wrcMDPaper){
       MajEvents = c("Challenge","Champ","Showcase","Premier","Qualifier","MOCS")
       dataset=dataset[grep(paste(MajEvents,collapse="|"), dataset$Tournament), ]
       EventType="Major Official Events"
+    }else if (!input$wrcMDPrelims & !input$wrcMDChallenges & input$wrcMDPaper){
+      PapEvents = c("20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
+      dataset=dataset[grep(paste(PapEvents,collapse="|"), dataset$Tournament), ]
+      EventType="Major Official Paper Events"
     }
     
     #Return a message if there is no event in the selection
@@ -1026,16 +1083,20 @@ function(input, output, session) {
     #Provide the right name to the type of chosen events
     #and filter to keep only the selected events
     EventType="Official Competitions"
-    if (!input$wrcMDPrelims & !input$wrcMDChallenges){
+    if (!input$wrcMDPrelims & !input$wrcMDChallenges & !input$wrcMDPaper){
       dataset=NA
       EventType=NA
-    }else if (input$wrcMDPrelims & !input$wrcMDChallenges){
+    }else if (input$wrcMDPrelims & !input$wrcMDChallenges & !input$wrcMDPaper){
       dataset=dataset[grep("Preliminary", dataset$Tournament), ]
       EventType="Preliminaries"
-    }else if (!input$wrcMDPrelims & input$wrcMDChallenges){
+    }else if (!input$wrcMDPrelims & input$wrcMDChallenges & !input$wrcMDPaper){
       MajEvents = c("Challenge","Champ","Showcase","Premier","Qualifier","MOCS")
       dataset=dataset[grep(paste(MajEvents,collapse="|"), dataset$Tournament), ]
       EventType="Major Official Events"
+    }else if (!input$wrcMDPrelims & !input$wrcMDChallenges & input$wrcMDPaper){
+      PapEvents = c("20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
+      dataset=dataset[grep(paste(PapEvents,collapse="|"), dataset$Tournament), ]
+      EventType="Major Official Paper Events"
     }
     
     #Return a message if there is no event in the selection
@@ -1214,16 +1275,20 @@ function(input, output, session) {
     #Provide the right name to the type of chosen events
     #and filter to keep only the selected events
     EventType="Official Competitions"
-    if (!input$wrcSBPrelims & !input$wrcSBChallenges){
+    if (!input$wrcSBPrelims & !input$wrcSBChallenges & !input$wrcSBPaper){
       dataset=NA
       EventType=NA
-    }else if (input$wrcSBPrelims & !input$wrcSBChallenges){
+    }else if (input$wrcSBPrelims & !input$wrcSBChallenges & !input$wrcSBPaper){
       dataset=dataset[grep("Preliminary", dataset$Tournament), ]
       EventType="Preliminaries"
-    }else if (!input$wrcSBPrelims & input$wrcSBChallenges){
+    }else if (!input$wrcSBPrelims & input$wrcSBChallenges & !input$wrcSBPaper){
       MajEvents = c("Challenge","Champ","Showcase","Premier","Qualifier","MOCS")
       dataset=dataset[grep(paste(MajEvents,collapse="|"), dataset$Tournament), ]
       EventType="Major Official Events"
+    }else if (!input$wrcSBPrelims & !input$wrcSBChallenges & input$wrcSBPaper){
+      PapEvents = c("20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
+      dataset=dataset[grep(paste(PapEvents,collapse="|"), dataset$Tournament), ]
+      EventType="Major Official Paper Events"
     }
     
     #Return a message if there is no event in the selection
@@ -1351,16 +1416,20 @@ function(input, output, session) {
     #Provide the right name to the type of chosen events
     #and filter to keep only the selected events
     EventType="Official Competitions"
-    if (!input$wrcSBPrelims & !input$wrcSBChallenges){
+    if (!input$wrcSBPrelims & !input$wrcSBChallenges & !input$wrcSBPaper){
       dataset=NA
       EventType=NA
-    }else if (input$wrcSBPrelims & !input$wrcSBChallenges){
+    }else if (input$wrcSBPrelims & !input$wrcSBChallenges & !input$wrcSBPaper){
       dataset=dataset[grep("Preliminary", dataset$Tournament), ]
       EventType="Preliminaries"
-    }else if (!input$wrcSBPrelims & input$wrcSBChallenges){
+    }else if (!input$wrcSBPrelims & input$wrcSBChallenges & !input$wrcSBPaper){
       MajEvents = c("Challenge","Champ","Showcase","Premier","Qualifier","MOCS")
       dataset=dataset[grep(paste(MajEvents,collapse="|"), dataset$Tournament), ]
       EventType="Major Official Events"
+    }else if (!input$wrcSBPrelims & !input$wrcSBChallenges & input$wrcSBPaper){
+      PapEvents = c("20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
+      dataset=dataset[grep(paste(PapEvents,collapse="|"), dataset$Tournament), ]
+      EventType="Major Official Paper Events"
     }
     
     #Return a message if there is no event in the selection
