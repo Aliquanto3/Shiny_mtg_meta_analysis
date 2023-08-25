@@ -1,3 +1,4 @@
+
 scriptDir="Scripts"
 
 filesToSource=c("1-libraries.R",
@@ -32,6 +33,11 @@ generate_Prelim_Data = function(periodData) {
   #CALCULATE THE NUMBER OF DEFEAT OF EACH DECK IN PRELIMINARIES - 
   #NUMBER OF ROUNDS MINUS THE NUMBER OF POINTS/3 (3 PTS EARNED BY WIN) 
   PrelimData$NDefeats=PrelimData$NRounds - PrelimData$Points/3
+  for (i in 1:nrow(PrelimData)){
+    if(PrelimData$NDefeats[i] == -1){
+    PrelimData$NDefeats[i] = 0
+    }
+  }
   
   #ADD TOP8 COLUMNS FOR MERGE WITH CHALLENGES
   PrelimData$T8Points=rep(0,length(PrelimData$Points))
@@ -42,6 +48,91 @@ generate_Prelim_Data = function(periodData) {
   
 }
 
+generate_Paper_Data = function(periodData) {
+  #COLLECT PRELIMINARIES ONLY FOR SPECIFIC TREATMENT
+  PapEvents = c("20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
+  PapData=periodData[grep(paste(PapEvents,collapse="|"), periodData$Tournament), ]
+  #View(PrelimData) 
+  PapData$Points=as.numeric(PapData$Points)
+  
+  #CALCULATE THE NUMBER OF ROUNDS IN EACH EVENT FOR THE CHALLENGES
+  #DIVIDE THE MAXIMUM NUMBER OF POINTS IN SWISS TO GET THE RESULT
+  #IF MORE THAN 1 PLAYER HAS THE MAXIMUM OF POINTS, THEN IT IS LIKELY THAT 
+  #THERE IS NOT ANY PLAYER AT X-0, SO YOU ADD 1 TO THE RESULT
+  listEventsChall=unique(PapData$TournamentName)
+  nbRoundsVec=c()
+  if(length(listEventsChall)>=1){
+    for (i in 1:length(listEventsChall)){
+      periodChallEventData=subset(PapData, TournamentName == listEventsChall[i])
+      maxPoints=max(periodChallEventData$Points)
+      nbPlayMaxPts=length(which(periodChallEventData$Points == maxPoints))
+      if(nbPlayMaxPts==1){
+        nbRounds=maxPoints/3
+      }else{
+        nbRounds=1+maxPoints/3
+      }
+      nbRoundsEvent=rep(nbRounds,nrow(periodChallEventData))
+      nbRoundsVec=c(nbRoundsVec,nbRoundsEvent)
+    }
+  }
+  PapData$NRounds=ceiling(nbRoundsVec)
+
+  #CALCULATE THE NUMBER OF DEFEAT OF EACH DECK IN CHALLENGES - 
+  #NUMBER OF ROUNDS MINUS THE NUMBER OF POINTS/3 (3 PTS EARNED BY WIN) 
+  PapData$NDefeats=PapData$NRounds - round(PapData$Points/3)
+  
+  #ADD TOP8 POINTS: 3*3 to 1st, 3*2 to 2nd, 3*1 to 3rd and 4th, none to others
+  PapData$T8Points=rep(0,length(PapData$Points))
+  if(length(listEventsChall)>=1){
+    for (i in 1:length(PapData$Result)){
+      if (PapData$Result[i] == "1st Place" & !is.na(PapData$Result[i])){
+        PapData$T8Points[i] = 9
+      }else if (PapData$Result[i] == "2nd Place" & !is.na(PapData$Result[i])){
+        PapData$T8Points[i] = 6
+      }else if ((PapData$Result[i] == "3rd Place" | 
+                 PapData$Result[i] == "4th Place")  & !is.na(PapData$Result[i])){
+        PapData$T8Points[i] = 3
+      }
+    }
+  }
+  
+  #ADD TOP8 DEFEATS: 0 FOR THE WINNER, 1 FOR THE OTHERS
+  PapData$T8Defeats=PapData$NDefeats
+  if(length(listEventsChall)>=1){
+    for (i in 1:length(PapData$T8Defeats)){
+      if (!is.na(PapData$Result[i]) & (PapData$Result[i] == "2nd Place" | 
+                                       PapData$Result[i] == "3rd Place"| 
+                                       PapData$Result[i] == "4th Place" | PapData$Result[i] == "5th Place"| 
+                                       PapData$Result[i] == "6th Place" | PapData$Result[i] == "7th Place"| 
+                                       PapData$Result[i] == "8th Place")){
+        PapData$T8Defeats[i] = 1 + round(PapData$NDefeats[i])
+      }
+    }
+  }
+  
+  if(length(listEventsChall)>=1){
+    PapData$T8Matches=rep(0,length(PapData$T8Points))
+    for (i in 1:length(PapData$T8Matches)){
+      if (!is.na(PapData$Result[i]) & (PapData$Result[i] == "1st Place" | 
+                                       PapData$Result[i] == "2nd Place")){
+        PapData$T8Matches[i] = 3
+      }else if (!is.na(PapData$Result[i]) & (PapData$Result[i] == "3rd Place" | 
+                                             PapData$Result[i] == "4th Place")){
+        PapData$T8Matches[i] = 2 
+      }else if (!is.na(PapData$Result[i]) & (PapData$Result[i] == "5th Place"| 
+                                             PapData$Result[i] == "6th Place" | 
+                                             PapData$Result[i] == "7th Place"| 
+                                             PapData$Result[i] == "8th Place")){
+        PapData$T8Matches[i] = 1 
+      }
+    }
+  }
+
+  
+  return(PapData)
+  
+}
+
 #Handles the other types of events
 #Adds points/victories based on the score, and number of rounds based on the
 #highest scores available
@@ -49,7 +140,7 @@ generate_Major_Data = function(periodData) {
   
   #COLLECT CHALLENGES ONLY FOR SPECIFIC TREATMENT
   MajEvents = c("Challenge","Champs", "Champ Qual", "Showcase","Premier",
-                "Super Qualifier","Players Tour Qualifier","MOCS")
+                "Super Qualifier","Players Tour Qualifier","MOCS")#,"20k","10k","5k","2k","1k","Pro Tour","LMS","LEC","RCQ","Re-CQ")
   MajData=periodData[grep(paste(MajEvents,collapse="|"), periodData$Tournament), ]
   #We remove those events because they do not include the points
   if (nrow(MajData[-grep("Champions Showcase", MajData$Tournament),])>0){
@@ -154,7 +245,7 @@ generate_df = function(RawFile){
                                     as.character(rawData$Date[i]),sep=" ")
   }
   
-  df=rbind(generate_Major_Data(rawData),generate_Prelim_Data(rawData))
+  df=rbind(generate_Major_Data(rawData),generate_Prelim_Data(rawData), generate_Paper_Data(rawData))
   
   #Convert the decklists columns to a more manageable form
   MainboardCardNames=list()
@@ -186,35 +277,17 @@ generate_df = function(RawFile){
   return(df)
 }
 
-#GET THE USEFUL DATA FROM ALL THE CARDS IN THE GAME
-getRawCardData = function(CardFile,CardIDFile){
-  #DATA FROM: https://mtgjson.com/downloads/all-files/
-  #IMPORT ALL THE DATA FOR ALL THE CARDS IN THE GAME
-  cardData = read.csv(CardFile,sep=",",header=T)
-  cardIdentifier = read.csv(CardIDFile,sep=",",header=T)
-  cardDataMerge = merge(cardData,cardIdentifier, by  = "uuid") 
-  #KEEP ONLY RELEVANT INFORMATION AND REMOVE DUPLICATES - CARDS PRINTED 
-  #MULTIPLE TIMES
-  cardDataSub = unique(subset(cardDataMerge,select=c(
-    colors,manaValue,faceName,layout,manaCost,name,subtypes,supertypes,
-    type,types,isReprint,setCode,artist,scryfallId)))
-  return(cardDataSub)
-}
-
 
 #Get the data from the source for the dates
 #and write it in a RDS file for better performance.
 ModernTreatedFile=generate_df(ModernRawFile)
 saveRDS(ModernTreatedFile,paste(RDSDir,"Modern_treated.rds",sep="/"))
 
-PioneerTreatedFile=generate_df(PioneerRawFile)
-saveRDS(PioneerTreatedFile,paste(RDSDir,"Pioneer_treated.rds",sep="/"))
-
-PauperTreatedFile=generate_df(PauperRawFile)
-saveRDS(PauperTreatedFile,paste(RDSDir,"Pauper_treated.rds",sep="/"))
-
-LegacyTreatedFile=generate_df(LegacyRawFile)
-saveRDS(LegacyTreatedFile,paste(RDSDir,"Legacy_treated.rds",sep="/"))
-
-rawCardData=getRawCardData(CardFile,CardIDFile)
-saveRDS(rawCardData,paste(RDSDir,"Card_treated.rds",sep="/"))
+# PioneerTreatedFile=generate_df(PioneerRawFile)
+# saveRDS(PioneerTreatedFile,paste(RDSDir,"Pioneer_treated.rds",sep="/"))
+# 
+# PauperTreatedFile=generate_df(PauperRawFile)
+# saveRDS(PauperTreatedFile,paste(RDSDir,"Pauper_treated.rds",sep="/"))
+# 
+# LegacyTreatedFile=generate_df(LegacyRawFile)
+# saveRDS(LegacyTreatedFile,paste(RDSDir,"Legacy_treated.rds",sep="/"))
